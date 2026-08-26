@@ -13,7 +13,7 @@ You don't need to poll for this. A version that's on its way out keeps serving y
 ```http
 Deprecation: @1767225600
 Sunset: Thu, 15 Jul 2027 00:00:00 GMT
-Link: <https://github.com/holidayextras/partner-api-connect-documentation/blob/staging/docs/migration-guides/v2-to-v3.md>; rel="sunset"
+Link: <https://github.com/holidayextras/partner-api-documentation/blob/staging/docs/migration-guides/v2-to-v3.md>; rel="sunset"
 ```
 
 - **`Deprecation`** - this version is deprecated; start planning your move.
