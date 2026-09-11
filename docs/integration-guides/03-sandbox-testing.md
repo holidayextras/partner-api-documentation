@@ -18,17 +18,21 @@ Each scenario has three parts:
 - **How to select it:** the documented request value, product code, or booking reference used to identify the scenario
 - **Expected result:** the consistent response or error the sandbox returns
 
-For example, one sandbox location code selects a no-availability response. Product codes in the search response identify successful booking, price-change, and error scenarios. Repeating the same documented request returns the same scenario, keeping your tests consistent.
+For example, one sandbox location code selects a no-availability search response, one product token selects a successful booking, and one booking reference selects a cancelled booking. Repeating the same documented request returns the same scenario, keeping your tests consistent.
+
+Each endpoint is selected independently. Values in a sandbox response, such as the location codes in the locations response or the `product_token` values in search results, are illustrative and do not select a scenario on the next call. Take every scenario value from the catalogue. Any other value returns a `422` sandbox miss. See [Error handling](../errors.md#sandbox-scenario-not-matched).
 
 For airport parking:
 
 1. Get an access token for sandbox. See [Authentication](../integration-guides/02-authentication.md).
-2. Call the relevant discovery endpoint for the product you are integrating. For airport parking, start with `GET /v2/locations?product_types=parking`.
-3. Run a product search. For airport parking, use [GET /v2/products/parking/detailed](../api-reference/get-parking-availability-detailed.md) or [GET /v2/products/parking](../api-reference/get-parking-availability.md).
-4. For a create-booking scenario, use the product code in the [Sandbox scenario catalogue](./08-sandbox-scenarios.md) to identify the relevant product in the search response, then create the booking with its `product_token`.
+2. Call `GET /v2/locations?product_types=parking&country_codes=GB` to check how you populate locations from API data.
+3. Run a product search with `location_code=LGW` using [GET /v2/products/parking/detailed](../api-reference/get-parking-availability-detailed.md) or [GET /v2/products/parking](../api-reference/get-parking-availability.md).
+4. For a create-booking scenario, send the `product_token` listed in the [Sandbox scenario catalogue](./08-sandbox-scenarios.md#create-booking-scenarios), for example `SBXBOOKING`.
 5. For a post-booking scenario, use the predefined booking reference listed in the catalogue with the relevant booking, amendment, or cancellation endpoint.
 
-The `booking_reference` returned when you create a sandbox booking identifies that booking. The predefined booking references in the scenario catalogue are a separate set used to select specific post-booking states.
+The `booking_reference` returned when you create a sandbox booking identifies that booking but does not select any scenario. The predefined booking references in the scenario catalogue are a separate set used to select specific post-booking states.
+
+Sandbox covers UK parking in GBP with `en-GB` content.
 
 ---
 
@@ -67,10 +71,12 @@ These scenarios apply across product types. The exact product and endpoint examp
 | Scenario | How to find it | What to check |
 |---|---|---|
 | Price changed since search | Use the Price Lock scenario values in the [Sandbox scenario catalogue](./08-sandbox-scenarios.md#price-lock-and-price-validation) | You can show the customer the validated price or absorb the difference when an alternative token is returned. See [Price Lock](./07-price-lock.md) for the full flow |
-| Booking not found | Use `SBXNOTFOUND` from the [get booking scenarios](./08-sandbox-scenarios.md#get-booking-scenarios) | The customer or agent sees a useful not-found message |
-| Cancellation not available | Use a non-cancellable booking from the [cancellation quote scenarios](./08-sandbox-scenarios.md#cancellation-quote-scenarios) | The customer sees that online cancellation is unavailable for this booking |
-| Amendment token expired | Use the expired-token values from the [amendment confirm scenarios](./08-sandbox-scenarios.md#amendment-confirm-scenarios) | The customer is asked to quote the amendment again |
-| Idempotency conflict | Use the idempotency scenario values in the [create booking error scenarios](./08-sandbox-scenarios.md#create-booking-error-scenarios) | Your integration treats the response as a request conflict, not as a successful duplicate |
+| Product no longer available | Use `SBXNOAVAIL` from the [Price Lock scenarios](./08-sandbox-scenarios.md#price-lock-and-price-validation) | The customer is asked to choose another product rather than shown a price |
+| Amendment not available | Use `SBXNOAMEND` from the [amendment quote scenarios](./08-sandbox-scenarios.md#amendment-quote-scenarios) | The customer sees that online amendment is unavailable for this booking |
+| Cancellation not available | Use `SBXNOCANCEL` from the [cancellation quote scenarios](./08-sandbox-scenarios.md#cancellation-quote-scenarios) | The customer sees that online cancellation is unavailable for this booking |
+| Amendment token expired | Use `SBXEXPIRED` from the [amendment confirm scenarios](./08-sandbox-scenarios.md#amendment-confirm-scenarios) | The customer is asked to quote the amendment again |
+| Idempotency conflict | Use `SBXCONFLICT` and `SBXPROCESSING` from the [create booking error scenarios](./08-sandbox-scenarios.md#create-booking-error-scenarios) | Your integration treats the response as a request conflict or a retry-later, not as a successful duplicate |
+| Downstream failure | Use `SBXFAIL` and `SBXTIMEOUT` from the [create booking error scenarios](./08-sandbox-scenarios.md#create-booking-error-scenarios) | The customer sees a clear message and your integration retries with the same `Idempotency-Key` |
 
 ---
 
@@ -83,10 +89,10 @@ Use this matrix as a coverage checklist for airport parking-specific behaviour. 
 | Scenario | How to find it | What to check |
 |---|---|---|
 | Vehicle registration required | Search for a product whose requirements include `vehicle_registration` | Vehicle registration is collected at the right point in the customer journey |
-| Email address required | Search for a product whose requirements include customer email | Email is collected and submitted in the expected booking field |
 | Mobile number required | Search for a product whose requirements include `mobile_number` | Mobile number collection, validation, and submission work correctly |
 | Flight details required | Search for a product whose requirements include flight number or terminal fields | Flight details are collected only when needed and submitted in the expected fields |
-| Details required before travel | Search for a product with `required_at: "before_travel"`, then view the booking to check `product_requirements[].requirement_deadline` | Follow-up messaging or account-area prompts use the requirement deadline returned on the booking |
+| Details required before travel | Search for a product with `required_at: "before_travel"`, then view `SBXCONFIRMED` to check `product_requirements[].requirement_deadline` | Follow-up messaging or account-area prompts use the requirement deadline returned on the booking |
+| Details already collected | View `SBXCOMPLETE` | Your account area shows supplied details rather than prompting for them again |
 
 ### Product display and content
 
@@ -103,10 +109,11 @@ Use this matrix as a coverage checklist for airport parking-specific behaviour. 
 
 | Scenario | How to find it | What to check |
 |---|---|---|
-| Barcode | View a booking where `access_methods.type` includes `barcode` | Barcode values are rendered in a usable format when present |
-| Licence plate recognition | View a booking where `access_methods.type` includes `licence_plate` | The customer sees the vehicle registration that will be used for access |
-| Reference | View a booking where `access_methods.type` includes `reference` | The exact reference returned by the API is displayed prominently |
-| Supplier confirmation | View a booking where `access_methods.type` includes `supplier_confirmation` | Customers are directed to follow the supplier's confirmation instructions |
+| Barcode | View `SBXCOMPLETE` or `SBXPENDING`, where `access_methods[].type` includes `barcode` | Barcode values are rendered in a usable format when present |
+| Licence plate recognition | View `SBXCONFIRMED`, where `access_methods[].type` includes `licence_plate` | The customer sees the vehicle registration that will be used for access |
+| Reference | View `SBXCONFIRMED`, where `access_methods[].type` includes `reference` | The exact reference returned by the API is displayed prominently |
+| Supplier confirmation | View `SBXCONFIRMED`, where `access_methods[].type` includes `supplier_confirmation` | Customers are directed to follow the supplier's confirmation instructions |
+| Access not yet available | View `SBXPENDING`, where some access method values are `null` | The customer is told access details will follow, rather than shown an empty value |
 
 ---
 

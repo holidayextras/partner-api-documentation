@@ -322,49 +322,36 @@ Errors follow [RFC 9457 Problem Details](../errors.md).
 
 ## Sandbox examples
 
+Sandbox scenarios are selected by `location_code`. Send `currency=GBP` and `accept-language: en-GB`; other currencies and languages are not available in sandbox. The dates, prices, and `product_token` values in the response are fixed and do not reflect the dates you send. See the [Sandbox scenario catalogue](../integration-guides/08-sandbox-scenarios.md#parking-search).
+
 ### Happy paths
 
-#### GBP availability in English - `LTN` / `GBP`
+#### Products available - `LGW`
 
-Returns a stable set of parking products in GBP and English language.
+Returns nine products covering every `parking_type`, with a mix of refundable, non-refundable, amendable, and non-amendable policies.
 
 ```bash
 curl "https://api-sandbox.holidayextras.com/partner-api/v2/products/parking/detailed\
 ?location_type=iata\
-&location_code=LTN\
+&location_code=LGW\
 &currency=GBP\
-&parking_entry_datetime=2026-06-01T06:00:00\
-&parking_exit_datetime=2026-06-15T18:00:00" \
+&parking_entry_datetime=2026-11-03T06:00:00\
+&parking_exit_datetime=2026-11-10T22:15:00" \
   -H "Authorization: Bearer {token}" \
   -H "accept-language: en-GB"
 ```
 
-#### EUR availability in German - `FRA` / `EUR`
+#### No availability - `ZZZ`
 
-Returns a stable set of parking products in EUR and German language.
-
-```bash
-curl "https://api-sandbox.holidayextras.com/partner-api/v2/products/parking/detailed\
-?location_type=iata\
-&location_code=FRA\
-&currency=EUR\
-&parking_entry_datetime=2026-06-01T06:00:00\
-&parking_exit_datetime=2026-06-15T18:00:00" \
-  -H "Authorization: Bearer {token}" \
-  -H "accept-language: de-DE"
-```
-
-#### No availability - `XXX`
-
-Returns a `200` with an empty array. Test that your UI handles zero results gracefully.
+Returns `200 OK` with an empty array. Test that your UI handles zero results gracefully.
 
 ```bash
 curl "https://api-sandbox.holidayextras.com/partner-api/v2/products/parking/detailed\
 ?location_type=iata\
-&location_code=XXX\
+&location_code=ZZZ\
 &currency=GBP\
-&parking_entry_datetime=2026-06-01T06:00:00\
-&parking_exit_datetime=2026-06-15T18:00:00" \
+&parking_entry_datetime=2026-11-03T06:00:00\
+&parking_exit_datetime=2026-11-10T22:15:00" \
   -H "Authorization: Bearer {token}" \
   -H "accept-language: en-GB"
 ```
@@ -380,10 +367,10 @@ Triggers a `400` with a validation error. Use any past datetime as `parking_entr
 ```bash
 curl "https://api-sandbox.holidayextras.com/partner-api/v2/products/parking/detailed\
 ?location_type=iata\
-&location_code=LTN\
+&location_code=LGW\
 &currency=GBP\
 &parking_entry_datetime=2020-01-01T06:00:00\
-&parking_exit_datetime=2026-06-15T18:00:00" \
+&parking_exit_datetime=2026-11-10T22:15:00" \
   -H "Authorization: Bearer {token}" \
   -H "accept-language: en-GB"
 ```
@@ -395,10 +382,10 @@ Triggers a `400` when `parking_exit_datetime` is earlier than `parking_entry_dat
 ```bash
 curl "https://api-sandbox.holidayextras.com/partner-api/v2/products/parking/detailed\
 ?location_type=iata\
-&location_code=LTN\
+&location_code=LGW\
 &currency=GBP\
-&parking_entry_datetime=2026-06-15T18:00:00\
-&parking_exit_datetime=2026-06-01T06:00:00" \
+&parking_entry_datetime=2026-11-10T22:15:00\
+&parking_exit_datetime=2026-11-03T06:00:00" \
   -H "Authorization: Bearer {token}" \
   -H "accept-language: en-GB"
 ```

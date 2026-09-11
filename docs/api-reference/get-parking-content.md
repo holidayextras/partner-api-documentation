@@ -197,26 +197,45 @@ Errors follow [RFC 9457 Problem Details](../errors.md).
 
 ## Sandbox examples
 
+Sandbox scenarios are selected by the full set of `product_codes`. Send the exact codes shown, in the order shown, with `accept-language: en-GB`. Other languages are not available in sandbox. See the [Sandbox scenario catalogue](../integration-guides/08-sandbox-scenarios.md#product-content).
+
 ### Happy paths
 
-#### English content - `en-GB`
+#### Content for all products - `FOO1,FOO2,FOO3`
 
 ```bash
 curl "https://api-sandbox.holidayextras.com/partner-api/v2/content/parking\
-?product_codes=LPH4\
-&product_codes=NCT0" \
+?product_codes=FOO1\
+&product_codes=FOO2\
+&product_codes=FOO3" \
   -H "Authorization: Bearer {token}" \
   -H "accept-language: en-GB"
 ```
 
-#### German content - `de-DE`
+#### Content for some products - `BAR1,BAR2,BAR3`
+
+Returns content for `BAR1` and `BAR3` only. Test that your UI copes with a product that has no content.
 
 ```bash
 curl "https://api-sandbox.holidayextras.com/partner-api/v2/content/parking\
-?product_codes=FMMJ\
-&product_codes=BER7" \
+?product_codes=BAR1\
+&product_codes=BAR2\
+&product_codes=BAR3" \
   -H "Authorization: Bearer {token}" \
-  -H "accept-language: de-DE"
+  -H "accept-language: en-GB"
+```
+
+#### No content - `BAZ1,BAZ2,BAZ3`
+
+Returns `200 OK` with an empty array.
+
+```bash
+curl "https://api-sandbox.holidayextras.com/partner-api/v2/content/parking\
+?product_codes=BAZ1\
+&product_codes=BAZ2\
+&product_codes=BAZ3" \
+  -H "Authorization: Bearer {token}" \
+  -H "accept-language: en-GB"
 ```
 
 ---
@@ -225,11 +244,13 @@ curl "https://api-sandbox.holidayextras.com/partner-api/v2/content/parking\
 
 #### Missing accept-language header
 
-Triggers a `406` response.
+Triggers a `406` response. Validation runs before scenario selection.
 
 ```bash
 curl "https://api-sandbox.holidayextras.com/partner-api/v2/content/parking\
-?product_codes=LPH4" \
+?product_codes=FOO1\
+&product_codes=FOO2\
+&product_codes=FOO3" \
   -H "Authorization: Bearer {token}"
 ```
 

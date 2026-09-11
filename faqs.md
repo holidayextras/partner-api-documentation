@@ -15,3 +15,11 @@ You refund the customer through your own payment process, based on the outcome r
 The customer buys from you, so you own the customer relationship and provide first-line support. You show the customer their amendment or cancellation options, collect their decision, and call the relevant quote and confirm endpoints.
 
 Holiday Extras applies the supplier rules, returns any price or refund impact, and updates the booking after the change is confirmed. If your support arrangement works differently, agree the responsibilities with your Holiday Extras partnerships contact during onboarding.
+
+## What are the API rate limits?
+
+Read endpoints such as search, content, and locations default to 5 requests per second. Booking endpoints, including the amendment and cancellation quote and confirm steps, default to 1 request per second. The same defaults apply in sandbox, staging, and production.
+
+The token endpoint is limited separately, at 10 requests per second and 100 requests per hour per `client_id`. Caching your token for its full hour keeps you well inside that.
+
+See [Rate limits](./docs/integration-guides/09-rate-limits.md) for the full endpoint breakdown, the rate limit response headers, and how to handle `429` responses.

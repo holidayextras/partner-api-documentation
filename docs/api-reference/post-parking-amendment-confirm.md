@@ -93,14 +93,16 @@ Errors follow [RFC 9457 Problem Details](../errors.md).
 
 ## Sandbox examples
 
+Sandbox scenarios are selected by the booking reference in the path. The `amendment_token` must be present but its value is not checked in sandbox; any string works. See the [Sandbox scenario catalogue](../integration-guides/08-sandbox-scenarios.md#amendment-confirm-scenarios).
+
 ### Happy paths
 
-#### Confirm an amendment
+#### Amendment confirmed - `SBXSUCCESS`
 
-Run an amendment quote first to get an `amendment_token`, then confirm it here.
+Returns `200 OK` with `booking_status: "active"`.
 
 ```bash
-curl -X POST "https://api-sandbox.holidayextras.com/partner-api/v2/bookings/parking/{ref}/amendments/confirm" \
+curl -X POST "https://api-sandbox.holidayextras.com/partner-api/v2/bookings/parking/SBXSUCCESS/amendments/confirm" \
   -H "Authorization: Bearer {token}" \
   -H "Content-Type: application/json" \
   -H "Idempotency-Key: $(uuidgen)" \
@@ -109,21 +111,18 @@ curl -X POST "https://api-sandbox.holidayextras.com/partner-api/v2/bookings/park
   }'
 ```
 
-#### Replay - same idempotency key
-
-Resending with the same `Idempotency-Key` returns the original response without applying the amendment again.
-
 ---
 
 ### Error scenarios
 
-#### Expired amendment token (409)
+Same request with the booking reference shown.
 
-Use a token whose `amendment_token_valid_until` has passed to trigger this response.
-
-#### Wrong token type (409)
-
-Pass a cancellation token rather than an amendment token to trigger this error.
+| Scenario | Booking reference | Response |
+|---|---|---|
+| Amendment token expired | `SBXEXPIRED` | `409 Conflict` with `code: "token_expired"` - ask the customer to quote again |
+| Idempotency conflict | `SBXCONFLICT` | `409 Conflict` - the request has already been fulfilled |
+| Idempotency processing | `SBXTOOEARLY` | `425 Too Early` - retry shortly |
+| Amendment failed | `SBXERROR` | `502 Bad Gateway` |
 
 ---
 

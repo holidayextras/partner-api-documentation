@@ -169,11 +169,13 @@ Continue with the alternative product only when both `validated_price` and `alte
 
 ## Sandbox examples
 
+Sandbox scenarios are selected by `product_token`. Use the values below rather than a token from a sandbox search; search tokens are illustrative and do not select a scenario. The rest of the body is validated but does not change the outcome. See the [Sandbox scenario catalogue](../integration-guides/08-sandbox-scenarios.md#create-booking-scenarios).
+
 ### Happy paths
 
-#### Successful booking - `LTN` / `GBP`
+#### Successful booking - `SBXBOOKING`
 
-Run a search first to get a `product_token`, then use it here. The sandbox returns a stable booking reference.
+Returns `201 Created` with a booking reference and pricing. The returned `booking_reference` does not select any get-booking scenario; use the references in the catalogue for those.
 
 ```bash
 curl -X POST "https://api-sandbox.holidayextras.com/partner-api/v2/bookings/parking" \
@@ -181,7 +183,7 @@ curl -X POST "https://api-sandbox.holidayextras.com/partner-api/v2/bookings/park
   -H "Content-Type: application/json" \
   -H "Idempotency-Key: $(uuidgen)" \
   -d '{
-    "product_token": "{token_from_search}",
+    "product_token": "SBXBOOKING",
     "partner_reference": "YOUR-REF-001",
     "customer": {
       "given_name": "Jane",
@@ -194,21 +196,54 @@ curl -X POST "https://api-sandbox.holidayextras.com/partner-api/v2/bookings/park
   }'
 ```
 
-#### Replay - same idempotency key
+---
 
-Resending a request with the same `Idempotency-Key` returns the original response without creating a duplicate booking.
+### Price Lock and price validation
+
+Each of these returns `409 Conflict` with `validated_price` and `alternative_product_token`. Continue only when both are returned: show the customer the updated price or absorb the difference, then submit a new booking request with a new `Idempotency-Key`. See [Price Lock](../integration-guides/07-price-lock.md). In sandbox the alternative token is illustrative and does not select a scenario.
+
+#### Price increased above threshold - `SBXLOCKINCREASE`
+
+```bash
+curl -X POST "https://api-sandbox.holidayextras.com/partner-api/v2/bookings/parking" \
+  -H "Authorization: Bearer {token}" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: $(uuidgen)" \
+  -d '{
+    "product_token": "SBXLOCKINCREASE",
+    "partner_reference": "YOUR-REF-001",
+    "customer": {
+      "given_name": "Jane",
+      "family_name": "Smith",
+      "email": "jane.smith@example.com"
+    },
+    "product_requirements": {
+      "vehicle_registration": "AB12 CDE"
+    }
+  }'
+```
+
+#### Price Lock window expired - `SBXLOCKEXPIRED`
+
+Same request with `"product_token": "SBXLOCKEXPIRED"`.
+
+#### Product no longer available - `SBXNOAVAIL`
+
+Returns `validated_price: null`. Ask the customer to choose another product. Same request with `"product_token": "SBXNOAVAIL"`.
 
 ---
 
 ### Error scenarios
 
-#### Expired product token (422)
+Same request with the `product_token` shown.
 
-Wait for `product_token_valid_until` to pass before submitting, or pass a manually expired token.
-
-#### Price changed since search (409)
-
-Triggered in the sandbox when the quoted price can no longer be accepted. Continue only when both `validated_price` and `alternative_product_token` are returned. You can show the customer the updated price and ask them to accept it, or absorb the difference yourself. Submit a new booking request with the alternative token and a new `Idempotency-Key`. If either field is missing, re-run the search before showing a new price.
+| Scenario | `product_token` | Response |
+|---|---|---|
+| Duplicate booking | `SBXDUPLICATE` | `409 Conflict` |
+| Idempotency conflict | `SBXCONFLICT` | `409 Conflict` - the request has already been fulfilled |
+| Idempotency processing | `SBXPROCESSING` | `425 Too Early` - retry shortly |
+| Booking failed | `SBXFAIL` | `502 Bad Gateway` |
+| Downstream timeout | `SBXTIMEOUT` | `504 Gateway Timeout` - retry with the same `Idempotency-Key` |
 
 ---
 

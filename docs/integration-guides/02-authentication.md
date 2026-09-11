@@ -48,6 +48,8 @@ async function getToken() {
 }
 ```
 
+Caching is also what keeps you inside the token endpoint's own limits. It allows 100 requests per hour per `client_id`, so one fetch per hour leaves plenty of headroom, while fetching a token per request exhausts the quota after 100 calls. See [Rate limits](./09-rate-limits.md).
+
 ## Sandbox Credentials
 
 To get your sandbox `client_id` and `client_secret`, contact [partnerconnect@holidayextras.com](mailto:partnerconnect@holidayextras.com). These are scoped to your account. Keep your `client_secret` secure.

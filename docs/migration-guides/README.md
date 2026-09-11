@@ -1,6 +1,8 @@
 # Version migrations
 
-This section holds guides for moving your integration from one major version of the API to the next. Each guide explains what changed and the steps to update.
+This section holds guides for moving an existing integration to a newer Partner API contract. Each guide explains what changed and the steps to update.
+
+Partner API 2026 is the current release of the Partner API, served from the `/v2` path - see [Why Partner API 2026](../../why-partner-api-2026.md) for what it covers. Moving airport parking to it from the legacy V1 API is both a platform and a contract migration. Future migrations between Partner API majors follow the versioning approach below.
 
 The API is versioned by major in the path (`/v1`, `/v2`, …). Within a major, changes are only ever additive and backwards-compatible - breaking changes arrive as a new major. When we introduce a new major, the previous one keeps working for a transition period, so you can migrate on your own schedule rather than all at once.
 
@@ -34,4 +36,4 @@ Once a version has been sunset, requests to it return **`410 Gone`** with a link
 
 Each guide is named for the transition it covers - for example `v2-to-v3.md`.
 
-There are no migration guides yet: the API currently runs a single major version, with nothing deprecated. Guides will appear here as new majors are introduced.
+- [Migrate airport parking from V1 to Partner API 2026](./v1-to-v2-parking.md) - move an existing V1 parking integration to Partner API 2026 authentication, search, booking, and booking-management journeys.

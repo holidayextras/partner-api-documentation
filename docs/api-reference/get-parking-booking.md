@@ -265,34 +265,76 @@ Errors follow [RFC 9457 Problem Details](../errors.md).
 
 ## Sandbox examples
 
+Sandbox scenarios are selected by the booking reference in the path. Use the predefined references below; the `booking_reference` returned by a sandbox create-booking request does not select a scenario. See the [Sandbox scenario catalogue](../integration-guides/08-sandbox-scenarios.md#get-booking-scenarios).
+
 ### Happy paths
 
-#### Get a confirmed booking
+#### Confirmed booking - `SBXCONFIRMED`
 
-Replace `{ref}` with a `booking_reference` returned from a successful sandbox booking.
+Returns an active, refundable, amendable booking with every access method, supplier fulfilment complete, and `before_travel` requirements still to collect.
 
 ```bash
-curl "https://api-sandbox.holidayextras.com/partner-api/v2/bookings/parking/{ref}" \
+curl "https://api-sandbox.holidayextras.com/partner-api/v2/bookings/parking/SBXCONFIRMED" \
   -H "Authorization: Bearer {token}" \
   -H "accept-language: en-GB"
 ```
 
-#### Get a booking where parking time amendments are not permitted - `SBXEUNOAM01`
+#### Pending supplier fulfilment - `SBXPENDING`
 
-Returns an active booking with `policies.amendments.permitted: false`.
+Returns an active booking where `supplier_fulfilment.status` is `pending` and the supplier reference is not yet available.
 
 ```bash
-curl "https://api-sandbox.holidayextras.com/partner-api/v2/bookings/parking/SBXEUNOAM01" \
+curl "https://api-sandbox.holidayextras.com/partner-api/v2/bookings/parking/SBXPENDING" \
   -H "Authorization: Bearer {token}" \
   -H "accept-language: en-GB"
 ```
 
-#### Get a cancelled booking - `SBXCANC001`
+#### All details collected - `SBXCOMPLETE`
+
+Returns an active booking with every product requirement already supplied.
+
+```bash
+curl "https://api-sandbox.holidayextras.com/partner-api/v2/bookings/parking/SBXCOMPLETE" \
+  -H "Authorization: Bearer {token}" \
+  -H "accept-language: en-GB"
+```
+
+#### Supplier fulfilment failed - `SBXFAILED`
+
+Returns an active booking where `supplier_fulfilment.status` is `failed`.
+
+```bash
+curl "https://api-sandbox.holidayextras.com/partner-api/v2/bookings/parking/SBXFAILED" \
+  -H "Authorization: Bearer {token}" \
+  -H "accept-language: en-GB"
+```
+
+#### Not amendable - `SBXNONAMEND`
+
+Returns a booking for a past date with `policies.amendments.permitted: false`.
+
+```bash
+curl "https://api-sandbox.holidayextras.com/partner-api/v2/bookings/parking/SBXNONAMEND" \
+  -H "Authorization: Bearer {token}" \
+  -H "accept-language: en-GB"
+```
+
+#### Not refundable - `SBXNOREFUND`
+
+Returns an active booking with no refund tiers in `policies.refunds`.
+
+```bash
+curl "https://api-sandbox.holidayextras.com/partner-api/v2/bookings/parking/SBXNOREFUND" \
+  -H "Authorization: Bearer {token}" \
+  -H "accept-language: en-GB"
+```
+
+#### Cancelled booking - `SBXCANCELLED`
 
 Returns a booking with `booking_status: "cancelled"`.
 
 ```bash
-curl "https://api-sandbox.holidayextras.com/partner-api/v2/bookings/parking/SBXCANC001" \
+curl "https://api-sandbox.holidayextras.com/partner-api/v2/bookings/parking/SBXCANCELLED" \
   -H "Authorization: Bearer {token}" \
   -H "accept-language: en-GB"
 ```
@@ -301,13 +343,7 @@ curl "https://api-sandbox.holidayextras.com/partner-api/v2/bookings/parking/SBXC
 
 ### Error scenarios
 
-#### Booking not found (404) - `SBXNOTFOUND`
-
-```bash
-curl "https://api-sandbox.holidayextras.com/partner-api/v2/bookings/parking/SBXNOTFOUND" \
-  -H "Authorization: Bearer {token}" \
-  -H "accept-language: en-GB"
-```
+Sandbox does not return `404` for an unknown reference. Any reference not listed above returns a `422` sandbox miss; see [Error handling](../errors.md#sandbox-scenario-not-matched).
 
 ---
 

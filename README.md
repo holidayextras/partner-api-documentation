@@ -62,6 +62,7 @@ Technical documentation for developers building against the Partner API, coverin
 | Guide | Description |
 |---|---|
 | [API Overview](docs/integration-guides/01-api-overview.md) | Base URLs, environments and key endpoints |
+| [Migrate airport parking from V1 to Partner API 2026](docs/migration-guides/v1-to-v2-parking.md) | Changes, mappings, testing, and cutover guidance for existing V1 parking partners |
 | [Authentication](docs/integration-guides/02-authentication.md) | OAuth 2.0 client credentials flow - getting and managing tokens |
 | [Sandbox testing](docs/integration-guides/03-sandbox-testing.md) | How to use predictable sandbox scenarios and choose the responses to test |
 | [Search endpoints](docs/integration-guides/04-search-endpoints.md) | When to use the detailed endpoint vs separate search and content endpoints |
@@ -71,6 +72,7 @@ Technical documentation for developers building against the Partner API, coverin
 | [Versioning and changelog](docs/integration-guides/06-versioning-and-changelog.md) | How API versions, backwards-compatible changes, deprecations, and schema updates are handled |
 | [Price Lock](docs/integration-guides/07-price-lock.md) | Carry selected prices through checkout and handle exceptional changes |
 | [Sandbox scenario catalogue](docs/integration-guides/08-sandbox-scenarios.md) | Sandbox values for booking, access, amendment, cancellation, and Price Lock scenarios |
+| [Rate limits](docs/integration-guides/09-rate-limits.md) | Default request rates per endpoint, rate limit headers, and how to handle `429` responses |
 
 ---
 

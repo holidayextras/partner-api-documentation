@@ -25,7 +25,7 @@ GET https://api.holidayextras.com/partner-api/v2/bookings/parking/{ref}/cancella
 ### Example request
 
 ```bash
-curl "https://api-sandbox.holidayextras.com/partner-api/v2/bookings/parking/GSFWRJ/cancellations/quote" \
+curl "https://api-sandbox.holidayextras.com/partner-api/v2/bookings/parking/SBXFULLREF/cancellations/quote" \
   -H "Authorization: Bearer {token}"
 ```
 
@@ -78,12 +78,34 @@ Errors follow [RFC 9457 Problem Details](../errors.md).
 
 ## Sandbox examples
 
+Sandbox scenarios are selected by the booking reference in the path. See the [Sandbox scenario catalogue](../integration-guides/08-sandbox-scenarios.md#cancellation-quote-scenarios).
+
 ### Happy paths
 
-#### Cancellation quote - refundable booking
+#### Full refund - `SBXFULLREF`
+
+Returns `is_refundable: true` with a refund equal to the booking total.
 
 ```bash
-curl "https://api-sandbox.holidayextras.com/partner-api/v2/bookings/parking/{ref}/cancellations/quote" \
+curl "https://api-sandbox.holidayextras.com/partner-api/v2/bookings/parking/SBXFULLREF/cancellations/quote" \
+  -H "Authorization: Bearer {token}"
+```
+
+#### Partial refund - `SBXPARTREF`
+
+Returns `is_refundable: true` with a partial refund. Test that you show the exact amount returned rather than the original price.
+
+```bash
+curl "https://api-sandbox.holidayextras.com/partner-api/v2/bookings/parking/SBXPARTREF/cancellations/quote" \
+  -H "Authorization: Bearer {token}"
+```
+
+#### No refund - `SBXNOREF`
+
+Returns `is_refundable: false` with a zero refund. The booking can still be cancelled; test that the customer understands nothing will be refunded.
+
+```bash
+curl "https://api-sandbox.holidayextras.com/partner-api/v2/bookings/parking/SBXNOREF/cancellations/quote" \
   -H "Authorization: Bearer {token}"
 ```
 
@@ -91,17 +113,17 @@ curl "https://api-sandbox.holidayextras.com/partner-api/v2/bookings/parking/{ref
 
 ### Error scenarios
 
-#### Already cancelled booking (409) - `SBXCANC001`
+#### Booking not cancellable (409) - `SBXNOCANCEL`
 
 ```bash
-curl "https://api-sandbox.holidayextras.com/partner-api/v2/bookings/parking/SBXCANC001/cancellations/quote" \
+curl "https://api-sandbox.holidayextras.com/partner-api/v2/bookings/parking/SBXNOCANCEL/cancellations/quote" \
   -H "Authorization: Bearer {token}"
 ```
 
-#### Booking not found (404) - `SBXNOTFOUND`
+#### Already cancelled booking (409) - `SBXCANCELLED`
 
 ```bash
-curl "https://api-sandbox.holidayextras.com/partner-api/v2/bookings/parking/SBXNOTFOUND/cancellations/quote" \
+curl "https://api-sandbox.holidayextras.com/partner-api/v2/bookings/parking/SBXCANCELLED/cancellations/quote" \
   -H "Authorization: Bearer {token}"
 ```
 

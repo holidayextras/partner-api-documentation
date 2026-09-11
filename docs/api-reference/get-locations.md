@@ -163,23 +163,25 @@ Errors follow [RFC 9457 Problem Details](../errors.md).
 
 ## Sandbox examples
 
+Sandbox needs `country_codes`. Requests without it return a `422` sandbox miss. See the [Sandbox scenario catalogue](../integration-guides/08-sandbox-scenarios.md#locations).
+
 ### Happy paths
 
-#### Parking locations
+#### UK parking locations - `GB`
 
-Returns all locations that support parking products.
-
-```bash
-curl "https://api-sandbox.holidayextras.com/partner-api/v2/locations?product_types=parking" \
-  -H "Authorization: Bearer {token}"
-```
-
-#### Filter by country
-
-Returns parking locations in the UK only.
+Returns six UK airports. The location codes are illustrative.
 
 ```bash
 curl "https://api-sandbox.holidayextras.com/partner-api/v2/locations?product_types=parking&country_codes=GB" \
+  -H "Authorization: Bearer {token}"
+```
+
+#### No locations - `AQ`
+
+Returns `200 OK` with an empty array. Test that your UI handles a country with no locations.
+
+```bash
+curl "https://api-sandbox.holidayextras.com/partner-api/v2/locations?product_types=parking&country_codes=AQ" \
   -H "Authorization: Bearer {token}"
 ```
 

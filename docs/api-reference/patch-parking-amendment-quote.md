@@ -124,65 +124,35 @@ Errors follow [RFC 9457 Problem Details](../errors.md).
 
 ## Sandbox examples
 
+Sandbox scenarios are selected by the booking reference in the path. Any valid request body gives the same result for a given reference. See the [Sandbox scenario catalogue](../integration-guides/08-sandbox-scenarios.md#amendment-quote-scenarios).
+
 ### Happy paths
 
-#### Parking time change (amendments permitted)
+#### Amendment without a price change - `SBXNOCHANGE`
+
+Returns `200 OK` with an `amendment_token` and matching `original_total` and `amended_total`.
 
 ```bash
-curl -X PATCH "https://api-sandbox.holidayextras.com/partner-api/v2/bookings/parking/{ref}/amendments/quote" \
+curl -X PATCH "https://api-sandbox.holidayextras.com/partner-api/v2/bookings/parking/SBXNOCHANGE/amendments/quote" \
   -H "Authorization: Bearer {token}" \
   -H "Content-Type: application/json" \
   -d '{
-    "parking_entry_datetime": "2026-06-02T06:00:00",
-    "parking_exit_datetime": "2026-06-16T18:00:00"
+    "parking_entry_datetime": "2026-11-04T06:00:00",
+    "parking_exit_datetime": "2026-11-10T22:15:00"
   }'
 ```
 
-#### Flight time change (amendments permitted)
+#### Amendment with a price change - `SBXCHANGE`
 
-Use this when the customer's flight times have changed and you want the API to derive the updated parking window.
+Returns `200 OK` with an `amendment_token` and an `amended_total` higher than `original_total`. Test that you show the difference before the customer confirms.
 
 ```bash
-curl -X PATCH "https://api-sandbox.holidayextras.com/partner-api/v2/bookings/parking/{ref}/amendments/quote" \
+curl -X PATCH "https://api-sandbox.holidayextras.com/partner-api/v2/bookings/parking/SBXCHANGE/amendments/quote" \
   -H "Authorization: Bearer {token}" \
   -H "Content-Type: application/json" \
   -d '{
-    "outbound_departure_datetime": "2026-06-02T08:30:00",
-    "inbound_arrival_datetime": "2026-06-16T19:45:00"
-  }'
-```
-
-#### Vehicle registration update where parking time amendments are not permitted - `SBXNOAMEND1`
-
-Returns `200 OK` with an `amendment_token`. This lets you test updating allowed product requirement data on a booking that does not permit date/time amendments.
-
-```bash
-curl -X PATCH "https://api-sandbox.holidayextras.com/partner-api/v2/bookings/parking/SBXNOAMEND1/amendments/quote" \
-  -H "Authorization: Bearer {token}" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "product_requirements": {
-      "vehicle_registration": "XY21 ZAB"
-    }
-  }'
-```
-
-#### Customer details update when `policies.amendments.permitted` is `false` - `SBXNONFLEX1`
-
-Always-amendable fields (customer details, vehicle details) go through even when `policies.amendments.permitted` is `false`.
-
-```bash
-curl -X PATCH "https://api-sandbox.holidayextras.com/partner-api/v2/bookings/parking/SBXNONFLEX1/amendments/quote" \
-  -H "Authorization: Bearer {token}" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "customer": {
-      "given_name": "Jane",
-      "family_name": "Smith"
-    },
-    "product_requirements": {
-      "vehicle_registration": "XY21 ZAB"
-    }
+    "parking_entry_datetime": "2026-11-04T06:00:00",
+    "parking_exit_datetime": "2026-11-10T22:15:00"
   }'
 ```
 
@@ -190,56 +160,28 @@ curl -X PATCH "https://api-sandbox.holidayextras.com/partner-api/v2/bookings/par
 
 ### Error scenarios
 
-#### Price-affecting amendment when `policies.amendments.permitted` is `false` (422) - `SBXNONFLEX1`
-
-Parking time and flight time changes are not permitted when `policies.amendments.permitted` is `false`.
+#### Booking not amendable (409) - `SBXNOAMEND`
 
 ```bash
-curl -X PATCH "https://api-sandbox.holidayextras.com/partner-api/v2/bookings/parking/SBXNONFLEX1/amendments/quote" \
+curl -X PATCH "https://api-sandbox.holidayextras.com/partner-api/v2/bookings/parking/SBXNOAMEND/amendments/quote" \
   -H "Authorization: Bearer {token}" \
   -H "Content-Type: application/json" \
   -d '{
-    "parking_entry_datetime": "2026-06-02T06:00:00",
-    "parking_exit_datetime": "2026-06-16T18:00:00"
+    "parking_entry_datetime": "2026-11-04T06:00:00",
+    "parking_exit_datetime": "2026-11-10T22:15:00"
   }'
 ```
 
-#### Parking time change where parking time amendments are not permitted (409) - `SBXNOAMEND1`
+#### Booking already cancelled (409) - `SBXCANCELLED`
 
 ```bash
-curl -X PATCH "https://api-sandbox.holidayextras.com/partner-api/v2/bookings/parking/SBXNOAMEND1/amendments/quote" \
+curl -X PATCH "https://api-sandbox.holidayextras.com/partner-api/v2/bookings/parking/SBXCANCELLED/amendments/quote" \
   -H "Authorization: Bearer {token}" \
   -H "Content-Type: application/json" \
   -d '{
-    "parking_entry_datetime": "2026-06-02T06:00:00",
-    "parking_exit_datetime": "2026-06-16T18:00:00"
+    "parking_entry_datetime": "2026-11-04T06:00:00",
+    "parking_exit_datetime": "2026-11-10T22:15:00"
   }'
-```
-
-#### Parking time and vehicle registration change where parking time amendments are not permitted (409) - `SBXNOAMEND1`
-
-The booking accepts a registration-only quote, but this mixed request is rejected because it also includes a date/time amendment.
-
-```bash
-curl -X PATCH "https://api-sandbox.holidayextras.com/partner-api/v2/bookings/parking/SBXNOAMEND1/amendments/quote" \
-  -H "Authorization: Bearer {token}" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "parking_entry_datetime": "2026-06-02T06:00:00",
-    "parking_exit_datetime": "2026-06-16T18:00:00",
-    "product_requirements": {
-      "vehicle_registration": "XY21 ZAB"
-    }
-  }'
-```
-
-#### No amendable fields submitted (422)
-
-```bash
-curl -X PATCH "https://api-sandbox.holidayextras.com/partner-api/v2/bookings/parking/{ref}/amendments/quote" \
-  -H "Authorization: Bearer {token}" \
-  -H "Content-Type: application/json" \
-  -d '{}'
 ```
 
 ---

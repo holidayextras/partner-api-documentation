@@ -58,7 +58,7 @@ The OpenAPI schema remains the source of truth for the exact response object. Th
 | `404 Not Found` | The requested resource does not exist, or is not visible to your account | Show a useful not-found state. Check the booking reference, product code, or environment |
 | `409 Conflict` | The request conflicts with the current booking, token, price, or idempotency state | Follow the endpoint-specific guidance and check what changed before retrying |
 | `422 Unprocessable Entity` | The request is well formed, but cannot be completed in the current business state | Ask the customer to choose another option, refresh the quote, or restart the relevant flow |
-| `429 Too Many Requests` | Too many requests were sent in a short period | Back off before retrying |
+| `429 Too Many Requests` | The request rate limit for your credentials was exceeded | Wait for the period given in `Retry-After`, then retry with exponential backoff. See [Rate limits](./integration-guides/09-rate-limits.md) |
 | `5xx` | A temporary or unexpected server problem | Retry when the operation is safe to retry. For write operations, use idempotency keys so the API can recognise the original action |
 
 For customer-facing journeys, keep error messages calm and practical. Tell the customer what they can do next; keep technical details such as `trace_id`, raw problem type, and request payloads in your logs.
@@ -170,6 +170,31 @@ Where possible, quote again rather than retrying a failed confirmation with the 
 
 ---
 
+## Sandbox scenario not matched
+
+In sandbox, every request must carry a value from the [Sandbox scenario catalogue](./integration-guides/08-sandbox-scenarios.md). A request that passes validation but uses a value that is not in the catalogue returns `422 Unprocessable Entity`:
+
+```json
+{
+  "type": "https://docs.holidayextras.co.uk/partner/v2/problems/unprocessable-entity",
+  "title": "Unprocessable Entity",
+  "status": 422,
+  "code": "unprocessable_entity",
+  "detail": "No sandbox scenario matching your request, check your environment",
+  "trace_id": "7b2f9b0d6b8f4c8d9f2a123456789abc",
+  "errors": [
+    {
+      "field": "booking_reference",
+      "message": "No sandbox scenario is configured for this value"
+    }
+  ]
+}
+```
+
+`errors[0].field` names the request field that selects the scenario for that endpoint. Check the value against the catalogue, and check that you are sending the request to sandbox rather than staging. This response only occurs in sandbox.
+
+---
+
 ## Retry guidance
 
 Retries are useful for temporary failures. The right retry pattern also protects customers from duplicate bookings, amendments, or cancellations.
@@ -177,6 +202,7 @@ Retries are useful for temporary failures. The right retry pattern also protects
 Safe default:
 
 - Retry `GET` requests when the failure looks temporary, such as a network error, `408`, `429`, or `5xx`.
+- Honour `Retry-After` on `429` responses before retrying. A `429` never reached the booking platform, so the request is always safe to retry. See [Rate limits](./integration-guides/09-rate-limits.md).
 - Retry write requests with the same `Idempotency-Key` so the API can return the original result instead of creating an unintentional duplicate.
 - Change the request before retrying validation errors, permission errors, not-found errors, expired tokens, or booking-rule conflicts.
 - Use exponential backoff for repeated retries. This gives temporary issues time to clear and reduces load on both systems.
