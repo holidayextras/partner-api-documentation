@@ -146,10 +146,10 @@ Continue with the alternative product only when both `validated_price` and `alte
 
 ```json
 {
-  "type": "https://docs.holidayextras.co.uk/partner/v2/problems/conflict",
+  "type": "https://github.com/holidayextras/partner-api-documentation/tree/main/docs/problems/conflict",
   "title": "Conflict",
   "status": 409,
-  "code": "conflict",
+  "code": "price_changed",
   "trace_id": "trace_123",
   "errors": [
     {

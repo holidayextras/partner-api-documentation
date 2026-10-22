@@ -40,16 +40,18 @@ Spread requests evenly rather than sending them in bursts. In practice this mean
 Every rate-limited response includes the current limit:
 
 ```http
-RateLimit-Limit: 5
+RateLimit-Limit: 5;w=1
 RateLimit-Remaining: 5
-RateLimit-Reset: 1780547930
+RateLimit-Reset: 1
 ```
 
 | Header | Description |
 |---|---|
-| `RateLimit-Limit` | Requests allowed in the current window for the endpoint group |
+| `RateLimit-Limit` | Requests allowed in the current window for the endpoint group, followed by the window itself as `w`, in seconds |
 | `RateLimit-Remaining` | Requests still allowed in the current window |
-| `RateLimit-Reset` | Unix timestamp, in seconds, when the current window resets |
+| `RateLimit-Reset` | Seconds until the current window resets |
+
+So `5;w=1` is five requests per second. The window tells you the rate the limit is expressed in, not an allowance you can spend in one go — a burst of five still returns `429`, as described in [How the limit is enforced](#how-the-limit-is-enforced).
 
 Because the limit is smoothed rather than counted as a bucket, `RateLimit-Remaining` reports the configured allowance rather than a live countdown. Use it to read your current limit, not to predict when the next request will be rejected.
 
@@ -59,7 +61,7 @@ Because the limit is smoothed rather than counted as a bucket, `RateLimit-Remain
 Retry-After: 1
 ```
 
-`Retry-After` is the number of seconds to wait before sending the next request.
+`Retry-After` is the number of seconds to wait before sending the next request. It appears on `429` responses only, so a successful response never carries it.
 
 ---
 
@@ -69,7 +71,7 @@ When the limit is exceeded, the API returns `429 Too Many Requests` with an RFC 
 
 ```json
 {
-  "type": "https://docs.holidayextras.co.uk/partner/v2/problems/too-many-requests",
+  "type": "https://github.com/holidayextras/partner-api-documentation/tree/main/docs/problems/too-many-requests",
   "title": "Too Many Requests",
   "status": 429,
   "code": "too_many_requests",
@@ -121,23 +123,23 @@ Auth server errors do not use Problem Details. When either limit is exceeded, th
 The auth server returns its own rate limit headers on every response. These describe the hourly quota, and unlike the Partner API headers above, `RateLimit-Remaining` is a live countdown, so you can see how much of your hour is left before you run out:
 
 ```http
-RateLimit-Limit: 100
+RateLimit-Limit: 100;w=3600
 RateLimit-Remaining: 87
-RateLimit-Reset: 1780551530
+RateLimit-Reset: 2400
 ```
 
 | Header | Description |
 |---|---|
-| `RateLimit-Limit` | Requests allowed in the current hour |
+| `RateLimit-Limit` | Requests allowed in the current hour, followed by the window itself as `w`, in seconds |
 | `RateLimit-Remaining` | Requests still allowed in the current hour |
-| `RateLimit-Reset` | Unix timestamp, in seconds, when the hourly quota resets |
+| `RateLimit-Reset` | Seconds until the hourly quota resets |
 
 A `429` adds `Retry-After` and reports whichever limit you exceeded, so you can tell the two apart:
 
 | Limit exceeded | `RateLimit-Limit` | `Retry-After` |
 |---|---|---|
-| 10 requests per second | `10` | `1` |
-| 100 requests per hour | `100` | Seconds remaining until the quota resets |
+| 10 requests per second | `10;w=1` | `1` |
+| 100 requests per hour | `100;w=3600` | Seconds remaining until the quota resets |
 
 Read `Retry-After` and wait at least that long. A `Retry-After` of `1` is a short burst you can safely retry through. A wait of minutes means the hourly quota is exhausted, and retrying sooner will keep failing until it resets — treat that as a token caching problem rather than something to retry through. See [Token caching](./02-authentication.md#token-caching).
 

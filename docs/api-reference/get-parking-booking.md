@@ -343,7 +343,17 @@ curl "https://api-sandbox.holidayextras.com/partner-api/v2/bookings/parking/SBXC
 
 ### Error scenarios
 
-Sandbox does not return `404` for an unknown reference. Any reference not listed above returns a `422` sandbox miss; see [Error handling](../errors.md#sandbox-scenario-not-matched).
+#### Booking not found - `SBXNOTFOUND`
+
+Returns `404 Not Found` with `code: "resource_not_found"`.
+
+```bash
+curl "https://api-sandbox.holidayextras.com/partner-api/v2/bookings/parking/SBXNOTFOUND" \
+  -H "Authorization: Bearer {token}" \
+  -H "accept-language: en-GB"
+```
+
+Any other reference not listed above returns a `422` sandbox miss rather than a `404`; see [Error handling](../errors.md#sandbox-scenario-not-matched).
 
 ---
 

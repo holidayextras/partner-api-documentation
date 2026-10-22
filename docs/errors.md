@@ -12,7 +12,7 @@ Most API errors use this shape:
 
 ```json
 {
-  "type": "https://docs.holidayextras.co.uk/partner/v2/problems/bad-request",
+  "type": "https://github.com/holidayextras/partner-api-documentation/tree/main/docs/problems/bad-request",
   "title": "Bad Request",
   "status": 400,
   "code": "bad_request",
@@ -29,10 +29,11 @@ Most API errors use this shape:
 
 | Field | Description |
 |---|---|
-| `type` | Stable problem type URI. Use this, where available, to identify the kind of error |
+| `type` | Stable URI for the class of problem. It resolves to that class's page in the [problem type reference](./problems/README.md). Several `code` values can share one `type` |
 | `title` | Short summary of the error |
 | `status` | HTTP status code |
-| `code` | Top-level machine-readable code summarising the response category, such as `bad_request` or `unprocessable_entity` |
+| `code` | Machine-readable code for this specific error, such as `bad_request` or `price_changed`. It can be more specific than `type`, so branch on `code` |
+| `detail` | Human-readable explanation of this occurrence. May be `null` |
 | `trace_id` | Identifier Holiday Extras can use to investigate the request |
 | `errors` | Validation or request-specific error details. This may be an empty array |
 
@@ -54,8 +55,8 @@ The OpenAPI schema remains the source of truth for the exact response object. Th
 |---|---|---|
 | `400 Bad Request` | The request is missing required fields or contains invalid values | Fix the request before retrying. If the error maps to customer input, show the relevant field message |
 | `401 Unauthorized` | The bearer token is missing, invalid, or expired | Fetch a new token and retry once. If it still fails, log the error and investigate credentials |
-| `403 Forbidden` | Your credentials are valid, but are not allowed to perform this action | Check account permissions or contact Holiday Extras |
-| `404 Not Found` | The requested resource does not exist, or is not visible to your account | Show a useful not-found state. Check the booking reference, product code, or environment |
+| `403 Forbidden` | Your credentials are valid, but are not allowed to perform this action, for example reading a booking that belongs to another account | Check account permissions or contact Holiday Extras |
+| `404 Not Found` | The requested resource does not exist | Show a useful not-found state. Check the booking reference, product code, or environment |
 | `409 Conflict` | The request conflicts with the current booking, token, price, or idempotency state | Follow the endpoint-specific guidance and check what changed before retrying |
 | `422 Unprocessable Entity` | The request is well formed, but cannot be completed in the current business state | Ask the customer to choose another option, refresh the quote, or restart the relevant flow |
 | `429 Too Many Requests` | The request rate limit for your credentials was exceeded | Wait for the period given in `Retry-After`, then retry with exponential backoff. See [Rate limits](./integration-guides/09-rate-limits.md) |
@@ -73,7 +74,7 @@ When `errors` is present, map each item back to the field in your form or integr
 
 ```json
 {
-  "type": "https://docs.holidayextras.co.uk/partner/v2/problems/bad-request",
+  "type": "https://github.com/holidayextras/partner-api-documentation/tree/main/docs/problems/bad-request",
   "title": "Bad Request",
   "status": 400,
   "code": "bad_request",
@@ -176,7 +177,7 @@ In sandbox, every request must carry a value from the [Sandbox scenario catalogu
 
 ```json
 {
-  "type": "https://docs.holidayextras.co.uk/partner/v2/problems/unprocessable-entity",
+  "type": "https://github.com/holidayextras/partner-api-documentation/tree/main/docs/problems/unprocessable-entity",
   "title": "Unprocessable Entity",
   "status": 422,
   "code": "unprocessable_entity",

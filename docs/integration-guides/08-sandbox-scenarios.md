@@ -90,6 +90,9 @@ Use these references with `GET /v2/bookings/parking/{ref}`.
 | Not amendable, past dates | `SBXNONAMEND` | A booking for a past date where `policies.amendments.permitted` is `false` |
 | Not refundable | `SBXNOREFUND` | An active booking with no refund tiers in `policies.refunds` |
 | Cancelled booking | `SBXCANCELLED` | A booking with `booking_status: "cancelled"` |
+| Booking not found | `SBXNOTFOUND` | Returns `404 Not Found` with `code: "resource_not_found"`; no booking exists for this reference |
+
+Use `SBXNOTFOUND` to test your not-found handling. A reference that is not in this catalogue returns `422 Unprocessable Entity` rather than `404 Not Found`.
 
 ## Amendment quote scenarios
 

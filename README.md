@@ -69,6 +69,7 @@ Technical documentation for developers building against the Partner API, coverin
 | [Price Lock](docs/integration-guides/07-price-lock.md) | Carry selected prices through checkout and handle exceptional changes |
 | [Webhooks](docs/integration-guides/05-webhooks.md) | Receive signed booking-impact notifications and refetch the latest booking state |
 | [Error handling](docs/errors.md) | How to handle validation errors, retries, idempotency conflicts, expired tokens, and support diagnostics |
+| [Problem types](docs/problems/README.md) | Reference page for each problem `type` URI the API returns: status, code, common causes, and how to resolve |
 | [Versioning and changelog](docs/integration-guides/06-versioning-and-changelog.md) | How API versions, backwards-compatible changes, deprecations, and schema updates are handled |
 | [Price Lock](docs/integration-guides/07-price-lock.md) | Carry selected prices through checkout and handle exceptional changes |
 | [Sandbox scenario catalogue](docs/integration-guides/08-sandbox-scenarios.md) | Sandbox values for booking, access, amendment, cancellation, and Price Lock scenarios |
